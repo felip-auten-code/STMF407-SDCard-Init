@@ -39,6 +39,14 @@ char* CreateFile_SD(char* name){
 	return "ERROR ON FILE CREATION\n";
 }
 
+char* CreateDir_SD(char* path){
+	if(f_mkdir(path) == FR_OK){
+		return "DIRECTORY WAS CREATED";
+	}
+	return "ERROR ON CREATION OF DIRECTORY";
+}
+
+
 
 char* WriteToFile_SD(char* filename, char* content){
 	if(f_open(&file, filename, FA_OPEN_APPEND | FA_READ | FA_WRITE  ) == FR_OK){
@@ -62,6 +70,13 @@ char* ClearFile_SD(char* filename){
 		return "CONTENT OF FILE WAS DELETED";
 	}
 	return "NO CONTENT WAS DELETED";
+}
+
+char* DeleteFile_SD(char* path){
+	if(f_unlink(path) == FR_OK){
+		return "FILE WAS DELETED";
+	}
+	return "ERROR ON FILE DELETION";
 }
 
 char* CloseFile_SD(){

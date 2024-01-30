@@ -87,7 +87,7 @@ char SDroot[1] = "/";
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	HAL_Delay(1000);
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -121,10 +121,11 @@ int main(void)
   resp = Mount_SD();
   HAL_Delay(500);
 
-//  resp = CreateFileSD("arquivotex.txt");
+//  resp = CreateFile_SD("arquivotex.txt");
 
   resp = WriteToFile_SD("arquivotex.txt", buffer);
 
+//  resp = DeleteFile_SD("arquivotex.txt");
 
   /* USER CODE END 2 */
 
