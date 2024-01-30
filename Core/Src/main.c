@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 #include "fatfs.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -50,6 +51,7 @@ DMA_HandleTypeDef hdma_sdio_rx;
 
 TIM_HandleTypeDef htim1;
 
+osThreadId sdCardTaskHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -60,12 +62,10 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_TIM1_Init(void);
+void CallbackSdCardTask(void const * argument);
+
 /* USER CODE BEGIN PFP */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-	if(htim->Instance == TIM1){
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
-	}
-}
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -87,7 +87,7 @@ char SDroot[1] = "/";
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	HAL_Delay(1000);
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -116,18 +116,40 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim1);
 
 
-  char buffer[100] = "\n CONTENT TO WRITE ON FILE 69 \n";
-  char* resp = (char*)malloc(sizeof(char) * 30);
-  resp = Mount_SD();
-  HAL_Delay(500);
 
-//  resp = CreateFileSD("arquivotex.txt");
-
-  resp = WriteToFile_SD("arquivotex.txt", buffer);
 
 
   /* USER CODE END 2 */
 
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* definition and creation of sdCardTask */
+  osThreadDef(sdCardTask, CallbackSdCardTask, osPriorityNormal, 0, 256);
+  sdCardTaskHandle = osThreadCreate(osThread(sdCardTask), NULL);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -300,10 +322,10 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA2_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
   /* DMA2_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
 
 }
@@ -355,6 +377,53 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_CallbackSdCardTask */
+/**
+  * @brief  Function implementing the sdCardTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_CallbackSdCardTask */
+void CallbackSdCardTask(void const * argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+	  char buffer[100] = "\n CONTENT TO WRITE ON FILE 69 \n";
+	  char* resp = (char*)malloc(sizeof(char) * 30);
+	  resp = Mount_SD();
+	  HAL_Delay(500);
+
+	//  resp = CreateFileSD("arquivotex.txt");
+
+	  resp = WriteToFile_SD("arquivotex.txt", buffer);
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM2 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM2) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
